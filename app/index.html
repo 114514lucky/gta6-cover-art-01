@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunset Coast Cover Studio — GTA-style poster maker</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Sunset Coast <span>Cover Studio</span></h1>
+    <p>Your photos, six panels, one sunset poster — exported as a PNG to share.</p>
+  </div>
+  <p class="top-note">Photos never leave your machine.</p>
+</header>
+<main class="app">
+  <section class="controls" aria-label="Cover controls">
+    <section>
+      <h2>1 · Cast — click a panel in the preview to edit it</h2>
+      <div id="slots" class="slots"></div>
+      <button id="fill-one" type="button" class="ghost">Fill all panels with the selected photo</button>
+    </section>
+    <section>
+      <h2>2 · Words</h2>
+      <label>Title <input id="title" type="text" maxlength="24" value="VICE COAST"></label>
+      <label>Subtitle <input id="subtitle" type="text" maxlength="48" value="Chasing the last light"></label>
+      <label>Tagline <input id="tagline" type="text" maxlength="64" value="SIX STRANGERS · ONE SUNSET · NO BRAKES"></label>
+      <label>Press quote <input id="quote" type="text" maxlength="48" value="EVERY SUNSET HAS A PRICE"></label>
+    </section>
+    <section>
+      <h2>3 · Look</h2>
+      <label class="group-label">Grade</label>
+      <div id="grades" class="picks"></div>
+      <label class="group-label">Layout</label>
+      <div id="layouts" class="picks"></div>
+      <label class="group-label">Export size</label>
+      <div id="sizes" class="picks"></div>
+    </section>
+    <section class="actions">
+      <button id="export" type="button" class="primary">Export PNG</button>
+      <button id="export-all" type="button">Export all 3 sizes</button>
+      <div class="undo-row">
+        <button id="undo" type="button" disabled>Undo</button>
+        <button id="redo" type="button" disabled>Redo</button>
+      </div>
+      <p id="status" role="status">Panel 2 selected — crop it with the sliders, or swap its photo.</p>
+    </section>
+  </section>
+  <section class="preview-wrap" aria-label="Live cover preview">
+    <canvas id="preview" width="1920" height="1080"></canvas>
+    <p class="preview-hint">Live preview — click any panel to crop it. What you see is what the PNG holds.</p>
+  </section>
+</main>
+<footer class="foot">
+  <p>Sample photos are AI-made for this demo — free to use. Lettering is Anton &amp; Pacifico (SIL Open Font License), vendored in app/fonts. No Rockstar artwork, logos or fonts. Works offline; nothing is uploaded.</p>
+</footer>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
