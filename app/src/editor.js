@@ -107,23 +107,29 @@ export async function initEditor() {
   }
 
   // ---- photo slots -------------------------------------------------------
+  // Each slot card is built once from the panel it starts with, but every
+  // handler below resolves its panel live — state.panels[i] at event time —
+  // instead of closing over the build-time panel object. restore() (undo /
+  // redo) replaces state.panels wholesale with fresh objects, so a closed-over
+  // panel would keep receiving edits that the preview and exporter never
+  // see. The build-time `initial` is only used for the card's first paint.
   const slots = el('slots');
-  state.panels.forEach((panel, i) => {
+  state.panels.forEach((initial, i) => {
     const card = document.createElement('div');
     card.className = 'slot';
     card.dataset.index = String(i);
     card.innerHTML = `
       <div class="thumb"><span class="slot-num">${i + 1}</span></div>
-      <input class="role" type="text" maxlength="16" value="${panel.role}" aria-label="Role tag for panel ${i + 1}">
-      <label class="zoom-label">Zoom <input class="zoom" type="range" min="1" max="2.2" step="0.01" value="${panel.zoom}"></label>
-      <label class="zoom-label">Across <input class="ox" type="range" min="-0.3" max="0.3" step="0.01" value="${panel.ox}"></label>
-      <label class="zoom-label">Down <input class="oy" type="range" min="-0.3" max="0.3" step="0.01" value="${panel.oy}"></label>
+      <input class="role" type="text" maxlength="16" value="${initial.role}" aria-label="Role tag for panel ${i + 1}">
+      <label class="zoom-label">Zoom <input class="zoom" type="range" min="1" max="2.2" step="0.01" value="${initial.zoom}"></label>
+      <label class="zoom-label">Across <input class="ox" type="range" min="-0.3" max="0.3" step="0.01" value="${initial.ox}"></label>
+      <label class="zoom-label">Down <input class="oy" type="range" min="-0.3" max="0.3" step="0.01" value="${initial.oy}"></label>
       <div class="slot-actions">
         <button type="button" class="mini sample-cycle">Sample</button>
         <label class="mini upload-label">Upload<input type="file" accept="image/*" hidden></label>
       </div>`;
     const thumb = card.querySelector('.thumb');
-    const img = photos[panel.photo];
+    const img = photos[initial.photo];
     if (img) thumb.style.backgroundImage = `url(${img.src})`;
     card.addEventListener('click', (e) => {
       if (e.target.closest('input,button,label')) return;
@@ -131,7 +137,7 @@ export async function initEditor() {
     });
     card.querySelector('.role').addEventListener('input', (e) => {
       snapshotOnce(e.target);
-      panel.role = e.target.value.toUpperCase();
+      state.panels[i].role = e.target.value.toUpperCase();
       queueRender();
     });
     card.querySelector('.role').addEventListener('change', (e) => armed.delete(e.target));
@@ -139,7 +145,7 @@ export async function initEditor() {
       const input = card.querySelector(selector);
       input.addEventListener('input', (e) => {
         snapshotOnce(e.target);
-        panel[key] = Number(e.target.value);
+        state.panels[i][key] = Number(e.target.value);
         queueRender();
       });
       input.addEventListener('change', (e) => armed.delete(e.target));
@@ -149,6 +155,7 @@ export async function initEditor() {
     bindRange('.oy', 'oy');
     card.querySelector('.sample-cycle').addEventListener('click', () => {
       snapshot();
+      const panel = state.panels[i];
       const now = SAMPLES.findIndex((s) => s.key === panel.photo);
       const next = SAMPLES[(now + 1) % SAMPLES.length];
       panel.photo = next.key;
@@ -167,7 +174,7 @@ export async function initEditor() {
         uploadCount += 1;
         const key = `up${uploadCount}`;
         photos[key] = uploaded;
-        panel.photo = key;
+        state.panels[i].photo = key;
         thumb.style.backgroundImage = `url(${url})`;
         status.textContent = `Loaded ${file.name} into panel ${i + 1}.`;
         queueRender();

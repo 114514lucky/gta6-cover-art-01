@@ -32,7 +32,20 @@ async function runCoverShot(query) {
 async function runEditorShot(query) {
   const editor = await initEditor();
   const shot = shotStateFromQuery(query);
-  Object.keys(shot).forEach((k) => { editor.state[k] = shot[k]; });
+  // Merge the shot scene into the live editor state in place. Assigning
+  // shot.panels wholesale would swap in fresh panel objects and orphan the
+  // ones the slot cards were built around — the same stale-panel hazard the
+  // editor's undo/redo path has — so each panel keeps its identity and
+  // only its fields change.
+  Object.keys(shot).forEach((k) => {
+    if (k === 'panels') {
+      shot.panels.forEach((panel, i) => {
+        if (editor.state.panels[i]) Object.assign(editor.state.panels[i], panel);
+      });
+    } else {
+      editor.state[k] = shot[k];
+    }
+  });
   editor.queueRender();
   // The editor's own render is queued on an animation frame; wait two
   // frames past it before declaring the scene ready.
